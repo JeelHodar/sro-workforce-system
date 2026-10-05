@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   @default("OWNER")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Worker {
+  id               String             @id @default(cuid())
+  workerCode       String             @unique
+  name             String
+  phone            String?
+  joiningDate      DateTime
+  status           String             @default("ACTIVE")
+  notes            String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  attendanceRecords AttendanceRecord[]
+}
+
+model AttendanceRecord {
+  id               String   @id @default(cuid())
+  workerId         String
+  date             DateTime
+  attendanceStatus String
+  boardsCarried    Int      @default(0)
+  weightCarriedKg  Float    @default(0)
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  worker           Worker   @relation(fields: [workerId], references: [id], onDelete: Cascade)
+
+  @@unique([workerId, date], map: "attendance_record_worker_date")
+  @@index([date])
+  @@index([workerId])
+}
